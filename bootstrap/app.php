@@ -13,6 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 172.20.0.1 — gateway of the `donate_default` docker network, i.e.
+        // the shared nginx reverse proxy in front of this app on prod.
+        $middleware->trustProxies(
+            at: ['172.20.0.1'],
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
         $middleware->append(PreventSearchIndexing::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
