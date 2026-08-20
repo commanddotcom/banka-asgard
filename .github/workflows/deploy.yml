@@ -17,6 +17,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_banka -o IdentitiesOnly=yes"
             cd /var/www/donate
             git pull origin main
