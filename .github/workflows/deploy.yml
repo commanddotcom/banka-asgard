@@ -20,6 +20,6 @@ jobs:
             export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_banka -o IdentitiesOnly=yes"
             cd /var/www/donate
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker compose build
+            docker compose up -d
             echo "✅ Деплой завершено успішно!"
