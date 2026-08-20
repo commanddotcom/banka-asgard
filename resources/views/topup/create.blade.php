@@ -23,16 +23,13 @@
 
         <form method="post" action="{{ route('banks.invoices.store', $bank) }}" class="space-y-4">
             @csrf
-            <div>
+            <div class="relative">
                 <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Ваше ім'я</label>
-                <input type="text" id="name" name="name" list="names-list" maxlength="255" value="{{ old('name') }}" required
+                <input type="text" id="name" name="name" maxlength="255" value="{{ old('name') }}" required
                        autocomplete="off"
                        class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">
-                <datalist id="names-list">
-                    @foreach ($names as $name)
-                        <option value="{{ $name }}"></option>
-                    @endforeach
-                </datalist>
+                <ul id="name-suggestions"
+                    class="hidden absolute z-10 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-slate-300 bg-white shadow-sm"></ul>
             </div>
             <div>
                 <label for="phone_last4" class="block text-sm font-medium text-slate-700 mb-1">Останні 4 цифри номера телефону</label>
@@ -50,4 +47,64 @@
             </button>
         </form>
     </div>
+
+    <script>
+        (() => {
+            const names = @json($names);
+            const input = document.getElementById('name');
+            const list = document.getElementById('name-suggestions');
+
+            function hide() {
+                list.classList.add('hidden');
+                list.innerHTML = '';
+            }
+
+            function render(matches) {
+                list.innerHTML = '';
+                matches.forEach((name) => {
+                    const item = document.createElement('li');
+                    item.textContent = name;
+                    item.dataset.name = name;
+                    item.className = 'px-3 py-2 cursor-pointer hover:bg-slate-100';
+                    list.appendChild(item);
+                });
+                list.classList.remove('hidden');
+            }
+
+            input.addEventListener('input', () => {
+                const query = input.value.trim().toLowerCase();
+
+                if (query.length < 1) {
+                    hide();
+                    return;
+                }
+
+                const matches = names.filter((name) => name.toLowerCase().startsWith(query));
+
+                if (matches.length === 0 || matches.length >= 10) {
+                    hide();
+                    return;
+                }
+
+                render(matches);
+            });
+
+            list.addEventListener('click', (event) => {
+                const item = event.target.closest('[data-name]');
+                if (!item) return;
+                input.value = item.dataset.name;
+                hide();
+            });
+
+            document.addEventListener('click', (event) => {
+                if (event.target !== input && !list.contains(event.target)) {
+                    hide();
+                }
+            });
+
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') hide();
+            });
+        })();
+    </script>
 @endsection
